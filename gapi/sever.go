@@ -3,16 +3,16 @@ package gapi
 import (
 	"fmt"
 	db "github.com/MsN-12/simpleBank/db/sqlc"
+	"github.com/MsN-12/simpleBank/pb"
 	"github.com/MsN-12/simpleBank/token"
 	"github.com/MsN-12/simpleBank/util"
-	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
+	pb.UnimplementedSimpleBankServer
 	config     util.Config
 	store      db.Store
 	tokenMaker token.Maker
-	router     *gin.Engine
 }
 
 func NewServer(config util.Config, store db.Store) (*Server, error) {
