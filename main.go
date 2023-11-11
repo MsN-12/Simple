@@ -8,7 +8,9 @@ import (
 	"github.com/MsN-12/simpleBank/gapi"
 	"github.com/MsN-12/simpleBank/pb"
 	"github.com/MsN-12/simpleBank/util"
+	"github.com/MsN-12/simpleBank/worker"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/hibiken/asynq"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -33,9 +35,24 @@ func main() {
 		log.Fatal().Msg("cannot connect to database: ")
 	}
 	store := db.NewStore(conn)
-	go runGateWayServer(config, store)
-	runGrpcServer(config, store)
 
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisAddress,
+	}
+	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+	go runTaskProcessor(redisOpt, store)
+	go runGateWayServer(config, store, taskDistributor)
+	runGrpcServer(config, store, taskDistributor)
+
+}
+
+func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
+	log.Info().Msg("start task processor")
+	err := taskProcessor.Start()
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to start task processor")
+	}
 }
 
 func runGinServer(config util.Config, store db.Store) {
@@ -48,8 +65,8 @@ func runGinServer(config util.Config, store db.Store) {
 		log.Fatal().Msg("cannot start sever: ")
 	}
 }
-func runGrpcServer(config util.Config, store db.Store) {
-	server, err := gapi.NewServer(config, store)
+func runGrpcServer(config util.Config, store db.Store, taskDistributor worker.TaskDistributor) {
+	server, err := gapi.NewServer(config, store, taskDistributor)
 	if err != nil {
 		log.Fatal().Msg("cannot create server: ")
 	}
@@ -68,8 +85,8 @@ func runGrpcServer(config util.Config, store db.Store) {
 		log.Fatal().Msg("cannot start gRPC server")
 	}
 }
-func runGateWayServer(config util.Config, store db.Store) {
-	server, err := gapi.NewServer(config, store)
+func runGateWayServer(config util.Config, store db.Store, taskDistributor worker.TaskDistributor) {
+	server, err := gapi.NewServer(config, store, taskDistributor)
 	if err != nil {
 		log.Fatal().Msg("cannot create server: ")
 	}
