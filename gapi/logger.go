@@ -57,19 +57,20 @@ func HttpLogger(handler http.Handler) http.Handler {
 			ResponseWriter: res,
 			StatusCode:     http.StatusOK,
 		}
-
-		handler.ServeHTTP(res, req)
+		handler.ServeHTTP(rec, req)
 		duration := time.Since(startTime)
-		logger := log.Info()
 
-		if rec.StatusCode == http.StatusOK {
+		logger := log.Info()
+		if rec.StatusCode != http.StatusOK {
 			logger = log.Error().Bytes("body", rec.Body)
 		}
+
 		logger.Str("protocol", "http").
 			Str("method", req.Method).
+			Str("path", req.RequestURI).
 			Int("status_code", rec.StatusCode).
 			Str("status_text", http.StatusText(rec.StatusCode)).
 			Dur("duration", duration).
-			Msg("received HTTP request")
+			Msg("received a HTTP request")
 	})
 }

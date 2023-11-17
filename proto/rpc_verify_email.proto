@@ -6,7 +6,7 @@ option go_package = "github.com/MsN-12/simpleBank/pb";
 
 message VerifyEmailRequest{
   int64 email_id = 1;
-  string secret = 2;
+  string secret_code = 2;
 }
 message VerifyEmailResponse{
   bool  is_verified = 1;
