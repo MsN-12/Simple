@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/aead/chacha20poly1305 v0.0.0-20170617001512-233f39982aeb
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/ghasedakapi/ghasedak-go v0.0.0-20220219065027-afb07b1dcf45
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.14.0
 	github.com/golang/mock v1.4.4
@@ -14,6 +15,7 @@ require (
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/lib/pq v1.10.9
 	github.com/o1egl/paseto v1.0.0
+	github.com/rakyll/statik v0.1.7
 	github.com/rs/zerolog v1.31.0
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
@@ -59,6 +61,9 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
+	github.com/tidwall/gjson v1.17.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	golang.org/x/arch v0.3.0 // indirect
