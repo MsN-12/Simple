@@ -8,12 +8,12 @@ type CreateUserTxParams struct {
 }
 
 // CreateUserResult is the result of the transfer transaction
-type CreateUserResult struct {
+type CreateUserTxResult struct {
 	User User
 }
 
-func (store *SqlStore) CreateUserTx(ctx context.Context, arg CreateUserTxParams) (CreateUserResult, error) {
-	var result CreateUserResult
+func (store *SqlStore) CreateUserTx(ctx context.Context, arg CreateUserTxParams) (CreateUserTxResult, error) {
+	var result CreateUserTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
