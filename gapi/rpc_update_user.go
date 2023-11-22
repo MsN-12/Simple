@@ -14,9 +14,16 @@ import (
 )
 
 func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
+	authPayload, err := server.authorizeUser(ctx)
+	if err != nil {
+		return nil, unAuthenticatedError(err)
+	}
 	violations := validateUpdateUserRequest(req)
 	if violations != nil {
 		return nil, invalidArgumentError(violations)
+	}
+	if authPayload.Username != req.Username {
+		return nil, status.Errorf(codes.PermissionDenied, "cannot update user's info")
 	}
 
 	arg := db.UpdateUserParams{
@@ -41,11 +48,13 @@ func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 			String: hashedPassword,
 			Valid:  true,
 		}
+
+		arg.PasswordChangedAt = sql.NullTime{
+			Time:  time.Now(),
+			Valid: true,
+		}
 	}
-	arg.PasswordChangedAt = sql.NullTime{
-		Time:  time.Now(),
-		Valid: true,
-	}
+
 	user, err := server.store.UpdateUser(ctx, arg)
 	if err != nil {
 		if err == sql.ErrNoRows {
