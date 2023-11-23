@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
-	"github.com/MsN-12/simpleBank/api"
 	db "github.com/MsN-12/simpleBank/db/sqlc"
 	"github.com/MsN-12/simpleBank/gapi"
 	"github.com/MsN-12/simpleBank/mail"
@@ -12,6 +10,8 @@ import (
 	"github.com/MsN-12/simpleBank/worker"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/hibiken/asynq"
+	_ "github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -31,11 +31,11 @@ func main() {
 	if config.Environment == "development" {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
-	conn, err := sql.Open(config.DBDriver, config.DBSource)
+	connPool, err := pgxpool.New(context.Background(), config.DBSource)
 	if err != nil {
 		log.Fatal().Msg("cannot connect to database: ")
 	}
-	store := db.NewStore(conn)
+	store := db.NewStore(connPool)
 
 	redisOpt := asynq.RedisClientOpt{
 		Addr: config.RedisAddress,
@@ -57,16 +57,16 @@ func runTaskProcessor(config util.Config, redisOpt asynq.RedisClientOpt, store d
 	}
 }
 
-func runGinServer(config util.Config, store db.Store) {
-	server, err := api.NewServer(config, store)
-	if err != nil {
-		log.Fatal().Msg("cannot create server: ")
-	}
-	err = server.Start(config.HttpServerAddress)
-	if err != nil {
-		log.Fatal().Msg("cannot start sever: ")
-	}
-}
+//	func runGinServer(config util.Config, store db.Store) {
+//		server, err := api.NewServer(config, store)
+//		if err != nil {
+//			log.Fatal().Msg("cannot create server: ")
+//		}
+//		err = server.Start(config.HttpServerAddress)
+//		if err != nil {
+//			log.Fatal().Msg("cannot start sever: ")
+//		}
+//	}
 func runGrpcServer(config util.Config, store db.Store, taskDistributor worker.TaskDistributor) {
 	server, err := gapi.NewServer(config, store, taskDistributor)
 	if err != nil {
