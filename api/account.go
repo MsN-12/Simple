@@ -5,8 +5,6 @@ import (
 	db "github.com/MsN-12/simpleBank/db/sqlc"
 	"github.com/MsN-12/simpleBank/token"
 	"github.com/gin-gonic/gin"
-	"github.com/lib/pq"
-	"log"
 	"net/http"
 )
 
@@ -28,8 +26,10 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	}
 	account, err := server.store.CreateAccount(ctx, arg)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			log.Println(pqErr.Code.Name())
+		errCode := db.ErrorCode(err)
+		if errCode == db.ForeignKeyViolation || errCode == db.UniqueViolation {
+			ctx.JSON(http.StatusForbidden, errorResponse(err))
+			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

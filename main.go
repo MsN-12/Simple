@@ -22,6 +22,9 @@ import (
 	"os"
 )
 
+// @title Simple Bank
+// @version 1.0
+// @description This is a simple bank server
 func main() {
 
 	config, err := util.LoadConfig(".")
@@ -56,17 +59,6 @@ func runTaskProcessor(config util.Config, redisOpt asynq.RedisClientOpt, store d
 		log.Fatal().Err(err).Msg("failed to start task processor")
 	}
 }
-
-//	func runGinServer(config util.Config, store db.Store) {
-//		server, err := api.NewServer(config, store)
-//		if err != nil {
-//			log.Fatal().Msg("cannot create server: ")
-//		}
-//		err = server.Start(config.HttpServerAddress)
-//		if err != nil {
-//			log.Fatal().Msg("cannot start sever: ")
-//		}
-//	}
 func runGrpcServer(config util.Config, store db.Store, taskDistributor worker.TaskDistributor) {
 	server, err := gapi.NewServer(config, store, taskDistributor)
 	if err != nil {
@@ -112,3 +104,14 @@ func runGateWayServer(config util.Config, store db.Store, taskDistributor worker
 		log.Fatal().Msg("cannot start http gateway server")
 	}
 }
+
+//	func runGinServer(config util.Config, store db.Store) {
+//		server, err := api.NewServer(config, store)
+//		if err != nil {
+//			log.Fatal().Msg("cannot create server: ")
+//		}
+//		err = server.Start(config.HttpServerAddress)
+//		if err != nil {
+//			log.Fatal().Msg("cannot start sever: ")
+//		}
+//	}

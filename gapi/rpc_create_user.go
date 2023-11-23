@@ -8,7 +8,6 @@ import (
 	"github.com/MsN-12/simpleBank/val"
 	"github.com/MsN-12/simpleBank/worker"
 	"github.com/hibiken/asynq"
-	"github.com/lib/pq"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -20,6 +19,7 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	if violations != nil {
 		return nil, invalidArgumentError(violations)
 	}
+
 	hashedPassword, err := util.HashPassword(req.GetPassword())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to hash password: %s", err)
@@ -37,32 +37,29 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 				Username: user.Username,
 			}
 			opts := []asynq.Option{
-				asynq.MaxRetry(5),
+				asynq.MaxRetry(10),
 				asynq.ProcessIn(10 * time.Second),
 				asynq.Queue(worker.QueueCritical),
 			}
+
 			return server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
 		},
 	}
 
 	txResult, err := server.store.CreateUserTx(ctx, arg)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name() {
-			case "unique_violation":
-				return nil, status.Errorf(codes.AlreadyExists, err.Error())
-			}
+		if db.ErrorCode(err) == db.UniqueViolation {
+			return nil, status.Errorf(codes.AlreadyExists, err.Error())
 		}
 		return nil, status.Errorf(codes.Internal, "failed to create user: %s", err)
 	}
-
-	// TODO: use db transaction
 
 	rsp := &pb.CreateUserResponse{
 		User: convertUser(txResult.User),
 	}
 	return rsp, nil
 }
+
 func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdetails.BadRequest_FieldViolation) {
 	if err := val.ValidateUsername(req.GetUsername()); err != nil {
 		violations = append(violations, fieldViolation("username", err))
