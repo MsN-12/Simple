@@ -22,9 +22,6 @@ import (
 	"os"
 )
 
-// @title Simple Bank
-// @version 1.0
-// @description This is a simple bank server
 func main() {
 
 	config, err := util.LoadConfig(".")
