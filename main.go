@@ -8,6 +8,9 @@ import (
 	"github.com/MsN-12/simpleBank/pb"
 	"github.com/MsN-12/simpleBank/util"
 	"github.com/MsN-12/simpleBank/worker"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/hibiken/asynq"
 	_ "github.com/jackc/pgx/v5"
@@ -35,6 +38,9 @@ func main() {
 	if err != nil {
 		log.Fatal().Msg("cannot connect to database: ")
 	}
+
+	runDBMigration(config.MigrationURL, config.DBSource)
+
 	store := db.NewStore(connPool)
 
 	redisOpt := asynq.RedisClientOpt{
@@ -45,6 +51,18 @@ func main() {
 	go runGateWayServer(config, store, taskDistributor)
 	runGrpcServer(config, store, taskDistributor)
 
+}
+func runDBMigration(migrationURL string, dbSource string) {
+	migration, err := migrate.New(migrationURL, dbSource)
+	if err != nil {
+		log.Fatal().Err(err).Msg("cannot create new migrate instance: ")
+	}
+
+	if err = migration.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatal().Err(err).Msg("failed to run migrate up:")
+	}
+
+	log.Info().Msg("db migrated successfully")
 }
 
 func runTaskProcessor(config util.Config, redisOpt asynq.RedisClientOpt, store db.Store) {

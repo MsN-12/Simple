@@ -20,7 +20,7 @@ services:
       - "8080:8080"
       - "9090:9090"
     environment:
-      - DB_SOURCE=postgresql://root:secret@postgres12:5432/simple_bank?sslmode=disable
+      - DB_SOURCE=postgresql://root:secret@postgres:5432/simple_bank?sslmode=disable
       - REDIS_ADDRESS=redis:6379
     depends_on:
       - postgres
