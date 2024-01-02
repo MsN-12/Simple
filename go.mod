@@ -21,11 +21,7 @@ require (
 	github.com/rs/zerolog v1.31.0
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
-<<<<<<< HEAD
-	golang.org/x/crypto v0.16.0
-=======
 	golang.org/x/crypto v0.17.0
->>>>>>> 88ffe4b4633242329055b3ff5643aabfb9cf0988
 	google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d
 	google.golang.org/grpc v1.58.0
