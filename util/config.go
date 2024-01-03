@@ -1,12 +1,14 @@
 package util
 
 import (
-	"github.com/spf13/viper"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 type Config struct {
 	RedisAddress         string        `mapstructure:"REDIS_ADDRESS"`
+	RedisPassword        string        `mapstructure:"REDIS_PASSWORD"`
 	Environment          string        `mapstructure:"ENVIRONMENT"`
 	DBSource             string        `mapstructure:"DB_SOURCE"`
 	MigrationURL         string        `mapstructure:"MIGRATION_URL"`

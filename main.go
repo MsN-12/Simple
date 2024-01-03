@@ -2,6 +2,10 @@ package main
 
 import (
 	"context"
+	"net"
+	"net/http"
+	"os"
+
 	db "github.com/MsN-12/simpleBank/db/sqlc"
 	"github.com/MsN-12/simpleBank/gapi"
 	"github.com/MsN-12/simpleBank/mail"
@@ -20,9 +24,6 @@ import (
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"net"
-	"net/http"
-	"os"
 )
 
 func main() {
@@ -44,7 +45,8 @@ func main() {
 	store := db.NewStore(connPool)
 
 	redisOpt := asynq.RedisClientOpt{
-		Addr: config.RedisAddress,
+		Addr:     config.RedisAddress,
+		Password: config.RedisPassword,
 	}
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 	go runTaskProcessor(config, redisOpt, store)
