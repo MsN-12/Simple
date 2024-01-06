@@ -2,6 +2,7 @@ version: "3.9"
 services:
   postgres:
     image: postgres:12-alpine
+    restart: always
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=secret
@@ -12,6 +13,8 @@ services:
       - data-volume:/var/lib/postgresql/data
   redis:
     image: redis:7-alpine
+    environment:
+      - REDIS_PASSWORD=Ux0ZDzTcFq1tvS50boDxQzbP
   api:
     build:
       context: .
@@ -20,7 +23,7 @@ services:
       - "3030:3030"
       - "4040:4040"
     environment:
-      - DB_SOURCE=postgresql://root:secret@postgres:5432/simple_bank?sslmode=disable
+      - DATABASE_URL=postgresql://root:secret@postgres:5432/simple_bank?sslmode=disable
       - REDIS_ADDRESS=redis:6379
     depends_on:
       - postgres
